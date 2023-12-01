@@ -1,0 +1,13 @@
+spring:
+  mail:
+    username: 707119577@qq.com
+    password: oorvvursvtphbbjg
+    host: smtp.qq.com
+    port: 465
+    protocol: smtps
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/easypan
+    username: root
+    password: gexingchen
+    driver-class-name: com.mysql.cj.jdbc.Driver
