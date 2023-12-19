@@ -20,9 +20,9 @@ public class InterceptConfig implements WebMvcConfigurer {
 //        registry.addInterceptor(new LoginIntercept());//可以直接new 也可以属性注入
         registry.addInterceptor(loginIntercept).
                 addPathPatterns("/**").    // 拦截所有 url
-                excludePathPatterns("/api/login"). //不拦截登录注册接口
-                excludePathPatterns("/api/register").
-                excludePathPatterns("/api/resetPassword").
+                excludePathPatterns("/api/user/login"). //不拦截登录注册接口
+                excludePathPatterns("/api/user/register").
+                excludePathPatterns("/api/user/resetPassword").
                 excludePathPatterns("/api/sendEmailCodeForResetPassword").
                 excludePathPatterns("/api/captcha").
                 excludePathPatterns("/api/sendEmailCodeForRegister");
