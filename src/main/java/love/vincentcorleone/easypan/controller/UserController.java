@@ -104,6 +104,14 @@ public class UserController {
         }
     }
 
+    @GetMapping("/user/logout")
+    public ResponseEntity<Object> logout(HttpSession session){
+        session.removeAttribute(Constants.LOGIN_USER_KEY);
+        Map<String,String> result = new HashMap<>();
+        result.put("message","退出成功");
+        return new ResponseEntity<>(result,HttpStatusCode.valueOf(200));
+    }
+
     @PostMapping("/user/resetPassword")
     public ResponseEntity<Object> resetPassword(HttpSession session,
                               @RequestParam("email") @Email(message = "邮箱格式不正确") String email,
