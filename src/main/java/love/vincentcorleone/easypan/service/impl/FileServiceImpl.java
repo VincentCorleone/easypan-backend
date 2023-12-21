@@ -1,7 +1,6 @@
 package love.vincentcorleone.easypan.service.impl;
 
-import love.vincentcorleone.easypan.Constants;
-import love.vincentcorleone.easypan.entity.po.User;
+import love.vincentcorleone.easypan.entity.vo.FileVo;
 import love.vincentcorleone.easypan.service.FileService;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.stereotype.Service;
@@ -11,6 +10,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class FileServiceImpl implements FileService {
@@ -26,33 +29,42 @@ public class FileServiceImpl implements FileService {
         }
         return projectPath;
     }
+
+    private String initUserRootDir(String projectPath, String nickName){
+        String basePath = projectPath + "files/";
+        File dir = new File(basePath);
+        if (!dir.exists()){
+            dir.mkdirs();
+        }
+
+        basePath = basePath + nickName  ;
+        dir = new File(basePath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        return basePath;
+    }
     @Override
     public void upload(String nickName, MultipartFile file) {
         String projectPath = getProjectPath();
+        String basePath = initUserRootDir(projectPath,nickName);
+        String filePath = basePath + "/" + file.getOriginalFilename();
 
-        String basePath = projectPath + "files/";
-        File dir = new File(basePath);
-//         判断当前目录是否存在
-        if (!dir.exists()){
-//          不存在的时候进行创建
-            dir.mkdirs();
-        }
-        basePath = basePath + nickName  + "/" ;
-        dir = new File(basePath);
-//         判断当前目录是否存在
-        if (!dir.exists()){
-//          不存在的时候进行创建
-            dir.mkdirs();
-        }
-
-        String finalPath = basePath  + file.getOriginalFilename();
-
-//      转存临时文件到指定的位置  参数是一个URL路径
         try {
-            file.transferTo(new File(finalPath));
+            file.transferTo(new File(filePath));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
+    }
+
+    @Override
+    public List<FileVo> loadFiles(String nickName, String currentPath) {
+        String basePath = initUserRootDir(getProjectPath(),nickName);
+        String dirPath = basePath + currentPath;
+        File dir = new File(dirPath);
+        List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles()));
+        return files.stream().map(FileVo::new).collect(Collectors.toList());
     }
 }
