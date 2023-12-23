@@ -37,6 +37,7 @@ public enum HttpStatusEnum {
      * 未授权
      */
     UNAUTHORIZED(401, "未授权"),
+    FAILWHENAUTHORIZING(402, "用户名或密码错误"),
     /**
      * 访问受限，授权过期
      */
@@ -69,6 +70,14 @@ public enum HttpStatusEnum {
      * 系统警告消息
      */
     WARN(601,"系统警告消息");
+
+    public Integer getCode() {
+        return code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 
     private final Integer code;
     private final String message;

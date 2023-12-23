@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import love.vincentcorleone.easypan.Constants;
+import love.vincentcorleone.easypan.exception.ResponseResult;
 import love.vincentcorleone.easypan.util.Captcha;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestMapping;
