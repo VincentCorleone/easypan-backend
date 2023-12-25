@@ -4,12 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import love.vincentcorleone.easypan.entity.UserStatus;
 import love.vincentcorleone.easypan.entity.po.User;
-import love.vincentcorleone.easypan.exception.BusinessException;
 import love.vincentcorleone.easypan.mapper.UserMapper;
 import love.vincentcorleone.easypan.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import java.util.Base64;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -58,11 +58,12 @@ public class UserServiceImpl implements UserService {
                     .eq("email",email);
             userMapper.update(user,wrapper);
         }else{
-            throw new BusinessException("该用户未注册");
+            throw new RuntimeException("该用户未注册");
         }
     }
 
     private String hashPassword(String password){
-        return new String(DigestUtils.md5Digest(password.getBytes()));
+        Base64.Encoder encoder = Base64.getEncoder();
+        return encoder.encodeToString(DigestUtils.md5Digest(password.getBytes()));
     }
 }

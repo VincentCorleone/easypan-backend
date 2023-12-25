@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import love.vincentcorleone.easypan.Constants;
 import love.vincentcorleone.easypan.entity.po.User;
-import love.vincentcorleone.easypan.exception.BusinessException;
 import love.vincentcorleone.easypan.exception.HttpStatusEnum;
 import love.vincentcorleone.easypan.exception.ResponseResult;
 import love.vincentcorleone.easypan.service.CaptchaService;
@@ -33,7 +32,7 @@ public class UserController {
     public ResponseResult<Object> sendEmailCodeForRegister(HttpSession session, @RequestParam("email") @Email(message = "邮箱格式不正确") String email, @RequestParam("captcha")  @Pattern(regexp = "^[0-9a-z]{5}$",message = "图片验证码格式不正确，正确格式为5位密码或数字") String captcha){
         //1.如果已存在该1用户，返回错误；否则发送邮箱验证码
         if(!captchaService.validate(captcha,"email",session)){
-            throw new BusinessException("验证码未通过验证");
+            throw new RuntimeException("验证码未通过验证");
         }
 
         //1.1 查找用户
@@ -41,21 +40,21 @@ public class UserController {
         if(user == null){
             emailService.sendEmailCode(email,session);
             return ResponseResult.success("邮件发送成功");
-        }else throw new BusinessException("此邮箱已被注册，请更换其他邮箱注册");
+        }else throw new RuntimeException("此邮箱已被注册，请更换其他邮箱注册");
 
     }
 
     @GetMapping("/sendEmailCodeForResetPassword")
     public ResponseResult<Object> sendEmailCodeForResetPassword(HttpSession session, @RequestParam("email") @Email(message = "邮箱格式不正确") String email, @RequestParam("captcha") @Pattern(regexp = "^[0-9a-z]{5}$",message = "图片验证码格式不正确，正确格式为5位密码或数字") String captcha){
         if(!captchaService.validate(captcha,"email",session)){
-            throw new BusinessException("验证码未通过验证");
+            throw new RuntimeException("验证码未通过验证");
         }
 
         User user = userService.findUserByEmail(email);
         if(user != null){
             emailService.sendEmailCode(email,session);
             return ResponseResult.success("邮件发送成功");
-        }else throw new BusinessException("此邮箱未被注册，无法重置密码");
+        }else throw new RuntimeException("此邮箱未被注册，无法重置密码");
     }
 
 
@@ -67,7 +66,7 @@ public class UserController {
                                            @RequestParam("password") @Pattern(regexp = "^[0-9a-z]{8,12}$",message = "密码格式不正确，正确格式为8-12位密码或数字") String password,
                                            @RequestParam("captcha") @Pattern(regexp = "^[0-9a-z]{5}$",message = "图片验证码格式不正确，正确格式为5位密码或数字") String captcha){
         if(!captchaService.validate(captcha,null,session)){
-            throw new BusinessException("验证码未通过验证");
+            throw new RuntimeException("验证码未通过验证");
         }
         validateEmailCode(session, emailCode);
         userService.register(email, nickname, password);
@@ -80,7 +79,7 @@ public class UserController {
                                         @RequestParam("password") @Pattern(regexp = "^[0-9a-z]{8,12}$",message = "密码格式不正确，正确格式为8-12位密码或数字") String password,
                                         @RequestParam("captcha") @Pattern(regexp = "^[0-9a-z]{5}$",message = "图片验证码格式不正确，正确格式为5位密码或数字") String captcha){
         if(!captchaService.validate(captcha,null,session)){
-            throw new BusinessException("验证码未通过验证");
+            throw new RuntimeException("验证码未通过验证");
         }
         User loginUser = userService.login(email, password);
         if (loginUser==null){
@@ -104,7 +103,7 @@ public class UserController {
                                                 @RequestParam("password") @Pattern(regexp = "^[0-9a-z]{8,12}$",message = "密码格式不正确，正确格式为8-12位密码或数字") String password,
                                                 @RequestParam("captcha") @Pattern(regexp = "^[0-9a-z]{5}$",message = "图片验证码格式不正确，正确格式为5位密码或数字") String captcha){
         if(!captchaService.validate(captcha,null,session)){
-            throw new BusinessException("验证码未通过验证");
+            throw new RuntimeException("验证码未通过验证");
         }
         validateEmailCode(session, emailCode);
         userService.resetPassword(email,password);
@@ -115,7 +114,7 @@ public class UserController {
         String _emailCode = (String) session.getAttribute(Constants.EMAIL_CODE_KEY);
         session.removeAttribute(Constants.EMAIL_CODE_KEY);
         if(_emailCode==null || !_emailCode.equals(emailCode)){
-            throw new BusinessException("邮箱验证码不正确");
+            throw new RuntimeException("邮箱验证码不正确");
         }
     }
 

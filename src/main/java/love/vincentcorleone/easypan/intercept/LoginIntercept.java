@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import love.vincentcorleone.easypan.Constants;
-import love.vincentcorleone.easypan.exception.BusinessException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -26,7 +25,7 @@ public class LoginIntercept implements HandlerInterceptor {
             return true;
         }
         // 执行到此代码表示未登录，未登录就跳转到登录页面
-        throw new BusinessException("该页面需要登录才能访问");
+        throw new RuntimeException("该页面需要登录才能访问");
 
     }
 }

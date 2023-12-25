@@ -12,6 +12,8 @@ public class FileVo {
 
     public String size;
 
+    public boolean isDirectory;
+
     public FileVo(File file) {
         this.fileName = file.getName();
         Date date = new Date(file.lastModified());
@@ -19,6 +21,7 @@ public class FileVo {
         SimpleDateFormat sdf1 = new SimpleDateFormat(pattern1);
         this.lastModified = sdf1.format(date);
         this.size = this.parseSize(file.length());
+        this.isDirectory = file.isDirectory();
     }
 
     private String parseSize(long fileS) {

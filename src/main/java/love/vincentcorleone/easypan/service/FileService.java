@@ -9,4 +9,9 @@ public interface FileService {
     void upload(String nickName, MultipartFile file);
 
     List<FileVo> loadFiles(String nickName, String currentPath);
+
+
+    String createDownloadCode(String nickName, String currentPath, String fileName);
+
+    String downloadFile(String code);
 }
