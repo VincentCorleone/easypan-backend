@@ -1,15 +1,11 @@
 package love.vincentcorleone.easypan.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
-import java.util.Map;
-
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionAdvice {
 
     @ExceptionHandler({RuntimeException.class})
@@ -19,8 +15,6 @@ public class GlobalExceptionAdvice {
 
     @ExceptionHandler({ConstraintViolationException.class})
     public ResponseResult<Object> handleException(HttpServletRequest request, ConstraintViolationException e){
-        Map<String,String> result = new HashMap<>();
-        result.put("message",((ConstraintViolation<?>)e.getConstraintViolations().toArray()[0]).getMessage());
         return ResponseResult.fail(e.getMessage());
     }
 }
