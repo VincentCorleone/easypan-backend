@@ -29,10 +29,24 @@ public class FileController {
     private FileService fileService;
 
     @PostMapping("/upload")
-    public ResponseResult<Object> upload(HttpSession session, @RequestParam("file") MultipartFile file){
+    public ResponseResult<Object> upload(HttpSession session, @RequestParam("file") MultipartFile file,
+                                         @RequestParam(value = "chunkIndex", required = false) Integer chunkIndex,
+                                         @RequestParam(value = "chunks", required = false) Integer chunks,
+                                         @RequestParam(value = "fileName", required = false) String fileName){
         String nickName =  ((User)session.getAttribute(Constants.LOGIN_USER_KEY)).getNickName();
-        fileService.upload(nickName, file);
-        return success("文件上传成功");
+        if(chunkIndex == null){
+            fileService.upload(nickName, file);
+            return success("文件上传成功");
+        }else{
+            boolean finished = fileService.uploadByChunks(nickName, file, chunkIndex, chunks, fileName);
+            if (finished){
+                return success("文件上传成功");
+            }else{
+                return success( 203,String.format("第%s/%s个文件分片上传成功，请继续上传下一个文件分片",chunkIndex+1,chunks));
+            }
+        }
+
+
     }
 
     @GetMapping("/loadFiles")

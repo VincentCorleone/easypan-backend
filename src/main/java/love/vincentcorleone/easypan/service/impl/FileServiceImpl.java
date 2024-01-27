@@ -5,6 +5,7 @@ import love.vincentcorleone.easypan.entity.po.Code2Path;
 import love.vincentcorleone.easypan.entity.vo.FileVo;
 import love.vincentcorleone.easypan.mapper.Code2PathMapper;
 import love.vincentcorleone.easypan.service.FileService;
+import love.vincentcorleone.easypan.util.AsyncTasks;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -15,16 +16,25 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static love.vincentcorleone.easypan.util.DeleteDir.deleteDirectory;
 
 @Service
 public class FileServiceImpl implements FileService {
 
     @Autowired
     private Code2PathMapper code2PathMapper;
+
+    @Autowired
+    private AsyncTasks asyncTasks;
+
+    private int testTransaction = 0;
 
     private String getProjectPath(){
         DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
@@ -97,5 +107,38 @@ public class FileServiceImpl implements FileService {
         Code2Path code2Path = code2PathMapper.selectOne(wrapper);
         code2PathMapper.delete(wrapper);
         return code2Path.getPath();
+    }
+
+    @Override
+    public boolean uploadByChunks(String nickName, MultipartFile file, Integer chunkIndex, Integer chunks, String fileName) {
+        String projectPath = this.getProjectPath();
+        String basePath = initUserRootDir(projectPath,nickName);
+        String filePath = basePath + "/" + fileName;
+        String fileTmpDirPath = filePath + "-tmp";
+
+        File tmpDir = new File(fileTmpDirPath);
+        if (!tmpDir.exists()){
+            tmpDir.mkdir();
+        }
+
+        try {
+            file.transferTo(new File(fileTmpDirPath + "/" + chunkIndex));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (chunkIndex == chunks - 1){
+            asyncTasks.union(filePath,fileTmpDirPath,chunks);
+            Path directoryPath = Paths.get(fileTmpDirPath); //替换为具体的目录路径
+            try {
+                deleteDirectory(directoryPath);
+            } catch (IOException e) {
+                throw new RuntimeException("上传文件后删除文件夹失败");
+            }
+            tmpDir.delete();
+            return true;
+        }else{
+            return false;
+        }
     }
 }

@@ -14,4 +14,6 @@ public interface FileService {
     String createDownloadCode(String nickName, String currentPath, String fileName);
 
     String downloadFile(String code);
+
+    boolean uploadByChunks(String nickName, MultipartFile file, Integer chunkIndex, Integer chunks, String fileName);
 }
