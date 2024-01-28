@@ -16,4 +16,6 @@ public interface FileService {
     String downloadFile(String code);
 
     boolean uploadByChunks(String nickName, MultipartFile file, Integer chunkIndex, Integer chunks, String fileName);
+
+    void newFolder(String nickName, String currentPath, String folderName);
 }

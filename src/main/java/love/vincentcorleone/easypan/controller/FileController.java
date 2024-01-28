@@ -45,8 +45,13 @@ public class FileController {
                 return success( 203,String.format("第%s/%s个文件分片上传成功，请继续上传下一个文件分片",chunkIndex+1,chunks));
             }
         }
+    }
 
-
+    @PostMapping("/newFolder")
+    public ResponseResult<Object> newFolder(HttpSession session, @RequestParam("currentPath") String currentPath, @RequestParam("folderName") String folderName){
+        String nickName =  ((User)session.getAttribute(Constants.LOGIN_USER_KEY)).getNickName();
+        fileService.newFolder(nickName, currentPath, folderName);
+        return ResponseResult.success("新建文件夹成功");
     }
 
     @GetMapping("/loadFiles")

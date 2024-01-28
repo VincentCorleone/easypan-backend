@@ -18,6 +18,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -82,8 +83,12 @@ public class FileServiceImpl implements FileService {
         String basePath = initUserRootDir(getProjectPath(),nickName);
         String dirPath = basePath + currentPath;
         File dir = new File(dirPath);
-        List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles()));
-        return files.stream().map(FileVo::new).collect(Collectors.toList());
+        if(dir.listFiles() == null){
+            return new ArrayList<>();
+        }else {
+            List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles()));
+            return files.stream().map(FileVo::new).collect(Collectors.toList());
+        }
     }
 
     @Override
@@ -140,5 +145,14 @@ public class FileServiceImpl implements FileService {
         }else{
             return false;
         }
+    }
+
+    @Override
+    public void newFolder(String nickName, String currentPath, String folderName) {
+        String basePath = initUserRootDir(getProjectPath(),nickName);
+        String dirPath = basePath + currentPath + folderName;
+
+        File dir = new File(dirPath);
+        dir.mkdir();
     }
 }
