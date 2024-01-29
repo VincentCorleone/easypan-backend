@@ -6,6 +6,10 @@ import org.springframework.stereotype.Service;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static love.vincentcorleone.easypan.util.DeleteDir.deleteDirectory;
 
 @Service
 public class AsyncTasks {
@@ -36,6 +40,18 @@ public class AsyncTasks {
             }
         } catch (IOException e) {
             throw new RuntimeException("合并文件失败");
+        } finally {
+            try {
+                raf.close();
+            } catch (IOException e) {
+                throw new RuntimeException("关闭写入的文件失败");
+            }
+            Path directoryPath = Paths.get(fromPathDir); //替换为具体的目录路径
+            try {
+                deleteDirectory(directoryPath);
+            } catch (IOException e) {
+                throw new RuntimeException("上传文件后删除文件夹失败");
+            }
         }
 
     }

@@ -134,13 +134,6 @@ public class FileServiceImpl implements FileService {
 
         if (chunkIndex == chunks - 1){
             asyncTasks.union(filePath,fileTmpDirPath,chunks);
-            Path directoryPath = Paths.get(fileTmpDirPath); //替换为具体的目录路径
-            try {
-                deleteDirectory(directoryPath);
-            } catch (IOException e) {
-                throw new RuntimeException("上传文件后删除文件夹失败");
-            }
-            tmpDir.delete();
             return true;
         }else{
             return false;
