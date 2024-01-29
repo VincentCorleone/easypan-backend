@@ -32,13 +32,14 @@ public class FileController {
     public ResponseResult<Object> upload(HttpSession session, @RequestParam("file") MultipartFile file,
                                          @RequestParam(value = "chunkIndex", required = false) Integer chunkIndex,
                                          @RequestParam(value = "chunks", required = false) Integer chunks,
-                                         @RequestParam(value = "fileName", required = false) String fileName){
+                                         @RequestParam(value = "fileName", required = false) String fileName,
+                                         @RequestParam(value = "currentPath") String currentPath){
         String nickName =  ((User)session.getAttribute(Constants.LOGIN_USER_KEY)).getNickName();
         if(chunkIndex == null){
-            fileService.upload(nickName, file);
+            fileService.upload(nickName,currentPath, file);
             return success("文件上传成功");
         }else{
-            boolean finished = fileService.uploadByChunks(nickName, file, chunkIndex, chunks, fileName);
+            boolean finished = fileService.uploadByChunks(nickName,currentPath, file, chunkIndex, chunks, fileName);
             if (finished){
                 return success("文件上传成功");
             }else{

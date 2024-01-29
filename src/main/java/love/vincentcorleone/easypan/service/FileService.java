@@ -6,7 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface FileService {
-    void upload(String nickName, MultipartFile file);
+    void upload(String nickName, String currentPath, MultipartFile file);
 
     List<FileVo> loadFiles(String nickName, String currentPath);
 
@@ -15,7 +15,7 @@ public interface FileService {
 
     String downloadFile(String code);
 
-    boolean uploadByChunks(String nickName, MultipartFile file, Integer chunkIndex, Integer chunks, String fileName);
+    boolean uploadByChunks(String nickName, String currentPath, MultipartFile file, Integer chunkIndex, Integer chunks, String fileName);
 
     void newFolder(String nickName, String currentPath, String folderName);
 }

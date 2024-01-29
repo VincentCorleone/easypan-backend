@@ -65,10 +65,10 @@ public class FileServiceImpl implements FileService {
         return basePath;
     }
     @Override
-    public void upload(String nickName, MultipartFile file) {
+    public void upload(String nickName, String currentPath, MultipartFile file) {
         String projectPath = getProjectPath();
         String basePath = initUserRootDir(projectPath,nickName);
-        String filePath = basePath + "/" + file.getOriginalFilename();
+        String filePath = basePath + currentPath + file.getOriginalFilename();
 
         try {
             file.transferTo(new File(filePath));
@@ -115,10 +115,10 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public boolean uploadByChunks(String nickName, MultipartFile file, Integer chunkIndex, Integer chunks, String fileName) {
+    public boolean uploadByChunks(String nickName, String currentPath, MultipartFile file, Integer chunkIndex, Integer chunks, String fileName) {
         String projectPath = this.getProjectPath();
         String basePath = initUserRootDir(projectPath,nickName);
-        String filePath = basePath + "/" + fileName;
+        String filePath = basePath + currentPath + fileName;
         String fileTmpDirPath = filePath + "-tmp";
 
         File tmpDir = new File(fileTmpDirPath);
