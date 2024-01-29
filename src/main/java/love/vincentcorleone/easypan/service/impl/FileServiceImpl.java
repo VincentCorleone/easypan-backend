@@ -70,8 +70,13 @@ public class FileServiceImpl implements FileService {
         String basePath = initUserRootDir(projectPath,nickName);
         String filePath = basePath + currentPath + file.getOriginalFilename();
 
+        File toFile = new File(filePath);
+        if(toFile.exists()){
+            throw new RuntimeException("该目录下存在相同文件名的文件，无法上传");
+        }
+
         try {
-            file.transferTo(new File(filePath));
+            file.transferTo(toFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -120,6 +125,10 @@ public class FileServiceImpl implements FileService {
         String basePath = initUserRootDir(projectPath,nickName);
         String filePath = basePath + currentPath + fileName;
         String fileTmpDirPath = filePath + "-tmp";
+
+        if(new File(filePath).exists()){
+            throw new RuntimeException("该目录下存在相同文件名的文件，无法上传");
+        }
 
         File tmpDir = new File(fileTmpDirPath);
         if (!tmpDir.exists()){
