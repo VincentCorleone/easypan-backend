@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import java.util.Base64;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Service
@@ -24,6 +23,14 @@ public class UserServiceImpl implements UserService {
 
         QueryWrapper<User> wrapper = new QueryWrapper<User>()
                 .eq("email",email);
+        return userMapper.selectOne(wrapper);
+    }
+
+    @Override
+    public User findUserById(Long id) {
+
+        QueryWrapper<User> wrapper = new QueryWrapper<User>()
+                .eq("id",id);
         return userMapper.selectOne(wrapper);
     }
 

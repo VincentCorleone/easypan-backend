@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpSession;
 import love.vincentcorleone.easypan.Constants;
 import love.vincentcorleone.easypan.entity.po.User;
 import love.vincentcorleone.easypan.entity.vo.FileVo;
+import love.vincentcorleone.easypan.exception.HttpStatusEnum;
 import love.vincentcorleone.easypan.exception.ResponseResult;
 import love.vincentcorleone.easypan.service.FileService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -33,13 +34,18 @@ public class FileController {
                                          @RequestParam(value = "chunkIndex", required = false) Integer chunkIndex,
                                          @RequestParam(value = "chunks", required = false) Integer chunks,
                                          @RequestParam(value = "fileName", required = false) String fileName,
-                                         @RequestParam(value = "currentPath") String currentPath){
-        String nickName =  ((User)session.getAttribute(Constants.LOGIN_USER_KEY)).getNickName();
+                                         @RequestParam(value = "currentPath") String currentPath,
+                                         @RequestParam(value = "md5", required = false) String md5){
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
         if(chunkIndex == null){
-            fileService.upload(nickName,currentPath, file);
+            fileService.upload(user.getNickName(),currentPath, file);
             return success("文件上传成功");
         }else{
-            boolean finished = fileService.uploadByChunks(nickName,currentPath, file, chunkIndex, chunks, fileName);
+            boolean uploaded = fileService.checkMd5(user, md5, currentPath, fileName);
+            if (uploaded){
+                return success(HttpStatusEnum.MD5_UPLOADED);
+            }
+            boolean finished = fileService.uploadByChunks(user,currentPath, file, chunkIndex, chunks, fileName, md5);
             if (finished){
                 return success("文件上传成功");
             }else{

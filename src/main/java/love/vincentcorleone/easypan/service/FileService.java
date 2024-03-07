@@ -1,5 +1,6 @@
 package love.vincentcorleone.easypan.service;
 
+import love.vincentcorleone.easypan.entity.po.User;
 import love.vincentcorleone.easypan.entity.vo.FileVo;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +16,9 @@ public interface FileService {
 
     String downloadFile(String code);
 
-    boolean uploadByChunks(String nickName, String currentPath, MultipartFile file, Integer chunkIndex, Integer chunks, String fileName);
+    boolean uploadByChunks(User user, String currentPath, MultipartFile file, Integer chunkIndex, Integer chunks, String fileName, String md5);
 
     void newFolder(String nickName, String currentPath, String folderName);
+
+    boolean checkMd5(User user, String md5, String currentPath, String fileName);
 }

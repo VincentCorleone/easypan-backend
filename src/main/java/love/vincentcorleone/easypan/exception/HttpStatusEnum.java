@@ -22,6 +22,9 @@ public enum HttpStatusEnum {
     /**
      * 资源已被移除
      */
+
+    MD5_UPLOADED(205, "文件秒传成功"),
+
     MOVED_PERM(301, "资源已被移除"),
     /**
      * 重定向
