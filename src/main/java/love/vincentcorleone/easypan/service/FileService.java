@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface FileService {
-    void upload(String nickName, String currentPath, MultipartFile file);
+    void upload(User user, String currentPath, MultipartFile file);
 
     List<FileVo> loadFiles(User nickName, String currentPath);
 

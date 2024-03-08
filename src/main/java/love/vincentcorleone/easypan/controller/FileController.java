@@ -38,7 +38,7 @@ public class FileController {
                                          @RequestParam(value = "md5", required = false) String md5){
         User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
         if(chunkIndex == null){
-            fileService.upload(user.getNickName(),currentPath, file);
+            fileService.upload(user,currentPath, file);
             return success("文件上传成功");
         }else{
             boolean uploaded = fileService.checkMd5(user, md5, currentPath, fileName);

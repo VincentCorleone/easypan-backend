@@ -38,14 +38,12 @@ public class FileServiceImpl implements FileService {
     private LargeFileMapper largeFileMapper;
 
     @Override
-    public void upload(String nickName, String currentPath, MultipartFile file) {
-        String basePath = initUserRootDir(nickName);
+    public void upload(User user, String currentPath, MultipartFile file) {
+        String basePath = initUserRootDir(user.getNickName());
         String filePath = basePath + currentPath + file.getOriginalFilename();
 
         File toFile = new File(filePath);
-        if(toFile.exists()){
-            throw new RuntimeException("该目录下存在相同文件名的文件，无法上传");
-        }
+        checkExistsSameFile(user, currentPath,file.getOriginalFilename());
 
         try {
             file.transferTo(toFile);
@@ -96,25 +94,30 @@ public class FileServiceImpl implements FileService {
         return code2Path.getPath();
     }
 
-    boolean checkExistsSameFile(){
-        return false;
-    }
 
-
-    private void checkSameName(String filePath){
+    private void checkExistsSameFile(User user,String currentPath, String fileName){
         //检查同目录下同名文件
-        //todo 重名逻辑要改
+        String basePath = initUserRootDir(user.getNickName());
+        String filePath = basePath + currentPath + fileName;
+
         if(new File(filePath).exists()){
             throw new RuntimeException("该目录下存在相同文件名的文件，无法上传");
         }
 
+        QueryWrapper<LargeFile> qw = new QueryWrapper<LargeFile>()
+                .eq("user_id",user.getId())
+                .eq("view_dir",currentPath)
+                .eq("file_name",fileName);
+        List<LargeFile> largeFiles = largeFileMapper.selectList(qw);
+        if(largeFiles ==null || largeFiles.size()>0){
+            throw new RuntimeException("该目录下存在相同文件名的文件，无法上传");
+        }
     }
     public boolean checkMd5(User user, String md5, String currentPath, String fileName){
-        String basePath = initUserRootDir(user.getNickName());
-        String filePath = basePath + currentPath + fileName;
-        String fileTmpDirPath = filePath + "-tmp";
 
-        checkSameName(filePath);
+
+
+        checkExistsSameFile(user,currentPath,fileName);
         //无同名文件，检查是否进行秒传逻辑
 
         QueryWrapper<LargeFile> pqw = new QueryWrapper<LargeFile>().eq("md5",md5);
@@ -152,7 +155,7 @@ public class FileServiceImpl implements FileService {
         String filePath = basePath + currentPath + fileName;
         String fileTmpDirPath = filePath + "-tmp";
 
-        checkSameName(filePath);
+        checkExistsSameFile(user,currentPath,fileName);
 
 
         File tmpDir = new File(fileTmpDirPath);
