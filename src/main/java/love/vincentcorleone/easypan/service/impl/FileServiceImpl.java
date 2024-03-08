@@ -1,7 +1,6 @@
 package love.vincentcorleone.easypan.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import jakarta.annotation.Resource;
 import love.vincentcorleone.easypan.entity.po.Code2Path;
 import love.vincentcorleone.easypan.entity.po.LargeFile;
 import love.vincentcorleone.easypan.entity.po.User;
@@ -9,11 +8,9 @@ import love.vincentcorleone.easypan.entity.vo.FileVo;
 import love.vincentcorleone.easypan.mapper.Code2PathMapper;
 import love.vincentcorleone.easypan.mapper.LargeFileMapper;
 import love.vincentcorleone.easypan.service.FileService;
-import love.vincentcorleone.easypan.service.UserService;
 import love.vincentcorleone.easypan.util.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,8 +18,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -31,7 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static love.vincentcorleone.easypan.util.FileUtils.deleteDirectory;
+import static love.vincentcorleone.easypan.util.FileUtils.*;
 
 @Service
 public class FileServiceImpl implements FileService {
@@ -42,58 +37,9 @@ public class FileServiceImpl implements FileService {
     @Autowired
     private LargeFileMapper largeFileMapper;
 
-    @Resource
-    private UserService userService;
-
-    private int testTransaction = 0;
-
-    private String getProjectPath(){
-        DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
-        URL url = resourceLoader.getClassLoader().getResource("");
-        String projectPath = null;
-        try {
-            projectPath = url.toURI().getSchemeSpecificPart();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        return projectPath;
-    }
-
-    private String initUserRootDir(String projectPath, String nickName){
-        String basePath = projectPath + "files/";
-        File dir = new File(basePath);
-        if (!dir.exists()){
-            dir.mkdirs();
-        }
-
-        basePath = basePath + nickName  ;
-        dir = new File(basePath);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        return basePath;
-    }
-
-    private String initPublicFileDir(String projectPath){
-        String basePath = projectPath + "files/";
-        File dir = new File(basePath);
-        if (!dir.exists()){
-            dir.mkdirs();
-        }
-
-        basePath = basePath + "public/"  ;
-        dir = new File(basePath);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        return basePath;
-    }
     @Override
     public void upload(String nickName, String currentPath, MultipartFile file) {
-        String projectPath = getProjectPath();
-        String basePath = initUserRootDir(projectPath,nickName);
+        String basePath = initUserRootDir(nickName);
         String filePath = basePath + currentPath + file.getOriginalFilename();
 
         File toFile = new File(filePath);
@@ -110,21 +56,26 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public List<FileVo> loadFiles(String nickName, String currentPath) {
-        String basePath = initUserRootDir(getProjectPath(),nickName);
+    public List<FileVo> loadFiles(User user, String currentPath) {
+        String basePath = initUserRootDir(user.getNickName());
         String dirPath = basePath + currentPath;
         File dir = new File(dirPath);
         if(dir.listFiles() == null){
             return new ArrayList<>();
         }else {
-            List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles()));
-            return files.stream().map(FileVo::new).collect(Collectors.toList());
+            List<FileVo> smallFiles = Arrays.stream(Objects.requireNonNull(dir.listFiles())).filter(file->file.length() < 1024 * 1024 * 10 ).map(FileVo::new).collect(Collectors.toList());
+            List<FileVo> result = new ArrayList<>(smallFiles);
+
+            QueryWrapper<LargeFile> qw = new QueryWrapper<LargeFile>().eq("user_id",user.getId());
+            List<FileVo> largeFiles = largeFileMapper.selectList(qw).stream().map(FileVo::new).collect(Collectors.toList());
+            result.addAll(largeFiles);
+            return result;
         }
     }
 
     @Override
     public String createDownloadCode(String nickName, String currentPath, String fileName) {
-        String basePath = initUserRootDir(getProjectPath(),nickName);
+        String basePath = initUserRootDir(nickName);
         String filePath = basePath + currentPath + fileName;
 
         String code = RandomStringUtils.random(10,true,true);
@@ -159,8 +110,7 @@ public class FileServiceImpl implements FileService {
 
     }
     public boolean checkMd5(User user, String md5, String currentPath, String fileName){
-        String projectPath = this.getProjectPath();
-        String basePath = initUserRootDir(projectPath,user.getNickName());
+        String basePath = initUserRootDir(user.getNickName());
         String filePath = basePath + currentPath + fileName;
         String fileTmpDirPath = filePath + "-tmp";
 
@@ -174,10 +124,7 @@ public class FileServiceImpl implements FileService {
             //private文件中有和上传文件MD5相同的记录
             if(!largeFile.isPublic()) {
                 //移动文件到公共文件目录
-                Long ownerUserId = largeFile.getUserId();
-                String ownerUserNickName = userService.findUserById(ownerUserId).getNickName();
-                String ownerBasePath = initUserRootDir(projectPath,ownerUserNickName);
-                FileUtils.moveFile(largeFile.getDiskPath(ownerBasePath), initPublicFileDir(getProjectPath()) + md5);
+                FileUtils.moveFile(largeFile.getDiskPath(), initPublicFileDir() + md5);
 
                 //旧私有文件记录改成公共文件记录
                 largeFile.setPublic(true);
@@ -201,15 +148,11 @@ public class FileServiceImpl implements FileService {
     }
     @Override
     public boolean uploadByChunks(User user, String currentPath, MultipartFile file, Integer chunkIndex, Integer chunks, String fileName, String md5) {
-        String projectPath = this.getProjectPath();
-        String basePath = initUserRootDir(projectPath,user.getNickName());
+        String basePath = initUserRootDir(user.getNickName());
         String filePath = basePath + currentPath + fileName;
         String fileTmpDirPath = filePath + "-tmp";
 
         checkSameName(filePath);
-
-
-
 
 
         File tmpDir = new File(fileTmpDirPath);
@@ -241,7 +184,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void newFolder(String nickName, String currentPath, String folderName) {
-        String basePath = initUserRootDir(getProjectPath(),nickName);
+        String basePath = initUserRootDir(nickName);
         String dirPath = basePath + currentPath + folderName;
 
         File dir = new File(dirPath);

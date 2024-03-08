@@ -1,6 +1,10 @@
 package love.vincentcorleone.easypan.util;
 
+import org.springframework.core.io.DefaultResourceLoader;
+
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.*;
 import java.io.File;
 
@@ -31,5 +35,51 @@ public class FileUtils {
         } else {
             throw new RuntimeException("源文件不存在");
         }
+    }
+
+    private static String getProjectPath(){
+        DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
+        URL url = resourceLoader.getClassLoader().getResource("");
+        String projectPath = null;
+        try {
+            projectPath = url.toURI().getSchemeSpecificPart();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+        return projectPath;
+    }
+
+    public static String initUserRootDir(String nickName){
+        String projectPath = getProjectPath();
+        String basePath = projectPath + "files/";
+        File dir = new File(basePath);
+        if (!dir.exists()){
+            dir.mkdirs();
+        }
+
+        basePath = basePath + nickName  ;
+        dir = new File(basePath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        return basePath;
+    }
+
+    public static String initPublicFileDir(){
+        String projectPath = getProjectPath();
+        String basePath = projectPath + "files/";
+        File dir = new File(basePath);
+        if (!dir.exists()){
+            dir.mkdirs();
+        }
+
+        basePath = basePath + "public/"  ;
+        dir = new File(basePath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        return basePath;
     }
 }

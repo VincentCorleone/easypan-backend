@@ -1,9 +1,16 @@
 package love.vincentcorleone.easypan.entity.po;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import love.vincentcorleone.easypan.EasypanApplication;
+import love.vincentcorleone.easypan.service.UserService;
+import love.vincentcorleone.easypan.util.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @TableName("large_file")
 public class LargeFile {
+
+    @Autowired
+    private static UserService userService = EasypanApplication.ac.getBean(UserService.class);
     private Long id;
 
     private Long userId;
@@ -64,7 +71,12 @@ public class LargeFile {
         this.md5 = md5;
     }
 
-    public String getDiskPath(String ownerBasePath){
-        return ownerBasePath + this.getViewDir() + this.getFileName();
+    public String getDiskPath(){
+        if(this.isPublic){
+            return FileUtils.initPublicFileDir() + this.md5;
+        }else{
+            User user = userService.findUserById(this.getUserId());
+            return FileUtils.initUserRootDir(user.getNickName()) + this.getViewDir() + this.getFileName();
+        }
     }
 }

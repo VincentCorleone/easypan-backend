@@ -9,7 +9,7 @@ import java.util.List;
 public interface FileService {
     void upload(String nickName, String currentPath, MultipartFile file);
 
-    List<FileVo> loadFiles(String nickName, String currentPath);
+    List<FileVo> loadFiles(User nickName, String currentPath);
 
 
     String createDownloadCode(String nickName, String currentPath, String fileName);

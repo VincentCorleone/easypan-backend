@@ -1,5 +1,7 @@
 package love.vincentcorleone.easypan.entity.vo;
 
+import love.vincentcorleone.easypan.entity.po.LargeFile;
+
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -22,6 +24,18 @@ public class FileVo {
         this.lastModified = sdf1.format(date);
         this.size = this.parseSize(file.length());
         this.isDirectory = file.isDirectory();
+    }
+
+    public FileVo(LargeFile largeFile){
+        this.fileName = largeFile.getFileName();
+        this.isDirectory = false;
+        String diskPath = largeFile.getDiskPath();
+        File file = new File(diskPath);
+        Date date = new Date(file.lastModified());
+        String pattern1 = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat sdf1 = new SimpleDateFormat(pattern1);
+        this.lastModified = sdf1.format(date);
+        this.size = this.parseSize(file.length());
     }
 
     private String parseSize(long fileS) {

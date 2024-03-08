@@ -63,8 +63,8 @@ public class FileController {
 
     @GetMapping("/loadFiles")
     public ResponseResult<List<FileVo>> loadFiles(HttpSession session, @RequestParam("currentPath") String currentPath){
-        String nickName =  ((User)session.getAttribute(Constants.LOGIN_USER_KEY)).getNickName();
-        List<FileVo> result = fileService.loadFiles(nickName, currentPath);
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
+        List<FileVo> result = fileService.loadFiles(user, currentPath);
         return ResponseResult.success(result);
     }
 
