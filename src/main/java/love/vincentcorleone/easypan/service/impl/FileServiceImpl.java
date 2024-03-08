@@ -64,7 +64,7 @@ public class FileServiceImpl implements FileService {
             List<FileVo> smallFiles = Arrays.stream(Objects.requireNonNull(dir.listFiles())).filter(file->file.length() < 1024 * 1024 * 10 ).map(FileVo::new).collect(Collectors.toList());
             List<FileVo> result = new ArrayList<>(smallFiles);
 
-            QueryWrapper<LargeFile> qw = new QueryWrapper<LargeFile>().eq("user_id",user.getId());
+            QueryWrapper<LargeFile> qw = new QueryWrapper<LargeFile>().eq("user_id",user.getId()).eq("view_dir",currentPath);
             List<FileVo> largeFiles = largeFileMapper.selectList(qw).stream().map(FileVo::new).collect(Collectors.toList());
             result.addAll(largeFiles);
             return result;
