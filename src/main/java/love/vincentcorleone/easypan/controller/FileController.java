@@ -5,6 +5,7 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import love.vincentcorleone.easypan.Constants;
+import love.vincentcorleone.easypan.entity.po.Code2Path;
 import love.vincentcorleone.easypan.entity.po.User;
 import love.vincentcorleone.easypan.entity.vo.FileVo;
 import love.vincentcorleone.easypan.exception.HttpStatusEnum;
@@ -77,8 +78,8 @@ public class FileController {
      */
     @GetMapping("/createDownloadCode")
     public ResponseResult<Map<String, String>> createDownloadCode(HttpSession session, @RequestParam("currentPath") String currentPath, @RequestParam("fileName") String fileName){
-        String nickName =  ((User)session.getAttribute(Constants.LOGIN_USER_KEY)).getNickName();
-        String code = fileService.createDownloadCode(nickName, currentPath, fileName);
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
+        String code = fileService.createDownloadCode(user, currentPath, fileName);
         Map<String,String> map = new HashMap<>();
         map.put("code",code);
         return ResponseResult.success(map);
@@ -86,8 +87,15 @@ public class FileController {
 
     @GetMapping("/downloadFile")
     public void downloadFile(HttpServletResponse response, @RequestParam("code") String code){
-        String filePath = fileService.downloadFile(code);
-        String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
+        Code2Path code2Path  = fileService.downloadFile(code);
+        String filePath = code2Path.getPath();
+        String fileName;
+        if(code2Path.getFileName()==null){
+            fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
+        }else{
+            fileName = code2Path.getFileName();
+        }
+
 
         File file = null;
         FileInputStream is = null;

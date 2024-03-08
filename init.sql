@@ -20,6 +20,7 @@ create table user(
 create table code2path(
     code varchar(20),
     path varchar(100),
+    file_name varchar(100),
     primary key (`code`)
 );
 

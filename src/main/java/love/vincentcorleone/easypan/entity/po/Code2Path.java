@@ -7,6 +7,16 @@ public class Code2Path {
     private String code;
 
     private String path;
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    private String fileName;
     public String getCode() {
         return code;
     }

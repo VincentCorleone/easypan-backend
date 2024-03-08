@@ -71,29 +71,59 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+
     @Override
-    public String createDownloadCode(String nickName, String currentPath, String fileName) {
-        String basePath = initUserRootDir(nickName);
+    public String createDownloadCode(User user, String currentPath, String fileName) {
+        String basePath = initUserRootDir(user.getNickName());
         String filePath = basePath + currentPath + fileName;
+
+        File file = new File(filePath);
+        LargeFile largeFile = getLargeFileBy3(user,currentPath,fileName);
+
+        Code2Path code2Path = new Code2Path();
+
+        String finalPath = null;
+        if(file.exists()){
+            //要下载的文件是私有的且小于10m
+            //要下载的文件是私有的且大于10m
+            finalPath = filePath;
+        }else if(largeFile!=null && largeFile.isPublic()){
+            //要下载的文件是公有的
+            finalPath = largeFile.getDiskPath();
+            code2Path.setFileName(fileName);
+        }else{
+            //异常
+            throw new RuntimeException("要下载的文件不存在");
+        }
+
+
+
 
         String code = RandomStringUtils.random(10,true,true);
 
-        Code2Path code2Path = new Code2Path();
+
         code2Path.setCode(code);
-        code2Path.setPath(filePath);
+        code2Path.setPath(finalPath);
 
         code2PathMapper.insert(code2Path);
         return code;
     }
 
     @Override
-    public String downloadFile(String code) {
+    public Code2Path downloadFile(String code) {
         QueryWrapper<Code2Path> wrapper = new QueryWrapper<Code2Path>().eq("code", code);
         Code2Path code2Path = code2PathMapper.selectOne(wrapper);
         code2PathMapper.delete(wrapper);
-        return code2Path.getPath();
+        return code2Path;
     }
 
+    private LargeFile getLargeFileBy3(User user, String currentPath, String fileName){
+        QueryWrapper<LargeFile> qw = new QueryWrapper<LargeFile>()
+                .eq("user_id",user.getId())
+                .eq("view_dir",currentPath)
+                .eq("file_name",fileName);
+        return largeFileMapper.selectOne(qw);
+    }
 
     private void checkExistsSameFile(User user,String currentPath, String fileName){
         //检查同目录下同名文件
@@ -104,12 +134,8 @@ public class FileServiceImpl implements FileService {
             throw new RuntimeException("该目录下存在相同文件名的文件，无法上传");
         }
 
-        QueryWrapper<LargeFile> qw = new QueryWrapper<LargeFile>()
-                .eq("user_id",user.getId())
-                .eq("view_dir",currentPath)
-                .eq("file_name",fileName);
-        List<LargeFile> largeFiles = largeFileMapper.selectList(qw);
-        if(largeFiles ==null || largeFiles.size()>0){
+        LargeFile largeFile = getLargeFileBy3(user,currentPath,fileName);
+        if(largeFile !=null ){
             throw new RuntimeException("该目录下存在相同文件名的文件，无法上传");
         }
     }

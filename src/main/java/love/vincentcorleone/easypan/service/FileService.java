@@ -1,5 +1,6 @@
 package love.vincentcorleone.easypan.service;
 
+import love.vincentcorleone.easypan.entity.po.Code2Path;
 import love.vincentcorleone.easypan.entity.po.User;
 import love.vincentcorleone.easypan.entity.vo.FileVo;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,9 +13,9 @@ public interface FileService {
     List<FileVo> loadFiles(User nickName, String currentPath);
 
 
-    String createDownloadCode(String nickName, String currentPath, String fileName);
+    String createDownloadCode(User user, String currentPath, String fileName);
 
-    String downloadFile(String code);
+    Code2Path downloadFile(String code);
 
     boolean uploadByChunks(User user, String currentPath, MultipartFile file, Integer chunkIndex, Integer chunks, String fileName, String md5);
 
