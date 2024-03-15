@@ -183,8 +183,8 @@ public class FileController {
         }
     }
 
-    @GetMapping("/previewImage")
-    public void previewImage(HttpSession session, HttpServletRequest request, HttpServletResponse response, @RequestParam("currentPath") String currentPath, @RequestParam("fileName") String fileName) {
+    @GetMapping("/previewFile")
+    public void previewFile(HttpSession session, HttpServletRequest request, HttpServletResponse response, @RequestParam("currentPath") String currentPath, @RequestParam("fileName") String fileName) {
         User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
         String finalPath = null;
 
