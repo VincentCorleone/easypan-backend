@@ -2,10 +2,12 @@ package love.vincentcorleone.easypan.controller;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import love.vincentcorleone.easypan.Constants;
 import love.vincentcorleone.easypan.entity.po.Code2Path;
+import love.vincentcorleone.easypan.entity.po.LargeFile;
 import love.vincentcorleone.easypan.entity.po.User;
 import love.vincentcorleone.easypan.entity.vo.FileVo;
 import love.vincentcorleone.easypan.exception.HttpStatusEnum;
@@ -15,13 +17,17 @@ import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static love.vincentcorleone.easypan.exception.ResponseResult.success;
+import static love.vincentcorleone.easypan.util.FileUtils.initUserAttachmentDir;
 
 @RestController
 @RequestMapping("/api/file")
@@ -39,9 +45,15 @@ public class FileController {
                                          @RequestParam(value = "md5", required = false) String md5){
         User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
         if(chunkIndex == null){
+            if(Objects.requireNonNull(file.getOriginalFilename()).contains(" ")){
+                throw new RuntimeException("文件名中不能包含空格");
+            }
             fileService.upload(user,currentPath, file);
             return success("文件上传成功");
         }else{
+            if(fileName.contains(" ")){
+                throw new RuntimeException("文件名中不能包含空格");
+            }
             boolean uploaded = fileService.checkMd5(user, md5, currentPath, fileName);
             if (uploaded){
                 return success(HttpStatusEnum.MD5_UPLOADED);
@@ -57,6 +69,9 @@ public class FileController {
 
     @PostMapping("/newFolder")
     public ResponseResult<Object> newFolder(HttpSession session, @RequestParam("currentPath") String currentPath, @RequestParam("folderName") String folderName){
+        if(folderName.contains(" ")){
+            throw new RuntimeException("文件夹名中不能包含空格");
+        }
         String nickName =  ((User)session.getAttribute(Constants.LOGIN_USER_KEY)).getNickName();
         fileService.newFolder(nickName, currentPath, folderName);
         return ResponseResult.success("新建文件夹成功");
@@ -121,6 +136,88 @@ public class FileController {
             }
         }
 
+    }
+
+    @GetMapping("/previewVideo/**")
+    public void previewFile(HttpSession session, HttpServletRequest request, HttpServletResponse response){
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
+        String uri = request.getRequestURL().toString();
+
+        String keyword = "previewVideo";
+
+        String uriRight = uri.substring(uri.indexOf(keyword) + keyword.length());
+
+        int tmp = uriRight.lastIndexOf("/");
+        String attachment = uriRight.substring(tmp);
+        String relativeFilePath = uriRight.substring(0,tmp);
+
+        tmp = relativeFilePath.lastIndexOf("/");
+        String fileName = relativeFilePath.substring(tmp+1);
+        String currentPath = relativeFilePath.substring(0,tmp);
+
+        String suffix = fileName.substring(fileName.lastIndexOf(".")+1);
+        String finalPath = null;
+        if (Constants.videos.contains(suffix)) {
+            String basePath = initUserAttachmentDir(user.getNickName());
+            String absoluteFilePath = basePath + relativeFilePath;
+
+            File file = new File(absoluteFilePath);
+            LargeFile largeFile = fileService.getLargeFileBy3(user, currentPath, fileName);
+
+
+            if (file.exists()) {
+                //要下载的文件是私有的且小于10m
+                //要下载的文件是私有的且大于10m
+                finalPath = absoluteFilePath;
+            } else if (largeFile != null && largeFile.isPublic()) {
+                //要下载的文件是公有的
+                finalPath = largeFile.getDiskPath();
+            } else {
+                //异常
+                throw new RuntimeException("要下载的文件不存在");
+            }
+
+            finalPath = finalPath + attachment;
+            readFile(response, finalPath);
+        }
+    }
+
+    private void readFile(HttpServletResponse response, String relativeFilePath){
+        FileInputStream in = null;
+        ServletOutputStream out = null;
+        try{
+            File file = new File(relativeFilePath);
+            if(!file.exists()){
+                return;
+            }
+            in = new FileInputStream(file);
+            byte[] bytes = new byte[1024];
+            out = response.getOutputStream();
+            int len = 0;
+            while ((len = in.read(bytes)) != -1){
+                out.write(bytes,0,len);
+            }
+            out.flush();
+
+
+        } catch (IOException e) {
+            throw new RuntimeException("读取文件异常",e);
+        } finally {
+            if(out!=null){
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (in!=null){
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
 }

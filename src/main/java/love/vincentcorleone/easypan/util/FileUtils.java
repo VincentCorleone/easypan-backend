@@ -66,9 +66,43 @@ public class FileUtils {
         return basePath;
     }
 
+    public static String initUserAttachmentDir(String nickName){
+        String projectPath = getProjectPath();
+        String basePath = projectPath + "attachment/";
+        File dir = new File(basePath);
+        if (!dir.exists()){
+            dir.mkdirs();
+        }
+
+        basePath = basePath + nickName  ;
+        dir = new File(basePath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        return basePath;
+    }
+
     public static String initPublicFileDir(){
         String projectPath = getProjectPath();
         String basePath = projectPath + "files/";
+        File dir = new File(basePath);
+        if (!dir.exists()){
+            dir.mkdirs();
+        }
+
+        basePath = basePath + "public/"  ;
+        dir = new File(basePath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        return basePath;
+    }
+
+    public static String initAttachmentPublicFileDir(){
+        String projectPath = getProjectPath();
+        String basePath = projectPath + "attachment/";
         File dir = new File(basePath);
         if (!dir.exists()){
             dir.mkdirs();

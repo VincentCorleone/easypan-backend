@@ -79,4 +79,13 @@ public class LargeFile {
             return FileUtils.initUserRootDir(user.getNickName()) + this.getViewDir() + this.getFileName();
         }
     }
+
+    public String getAttachmentDiskPath(){
+        if(this.isPublic){
+            return FileUtils.initAttachmentPublicFileDir() + this.md5;
+        }else{
+            User user = userService.findUserById(this.getUserId());
+            return FileUtils.initUserAttachmentDir(user.getNickName()) + this.getViewDir() + this.getFileName();
+        }
+    }
 }

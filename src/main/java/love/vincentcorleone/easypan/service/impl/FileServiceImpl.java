@@ -8,6 +8,7 @@ import love.vincentcorleone.easypan.entity.vo.FileVo;
 import love.vincentcorleone.easypan.mapper.Code2PathMapper;
 import love.vincentcorleone.easypan.mapper.LargeFileMapper;
 import love.vincentcorleone.easypan.service.FileService;
+import love.vincentcorleone.easypan.util.FfmpegUtils;
 import love.vincentcorleone.easypan.util.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ public class FileServiceImpl implements FileService {
     @Autowired
     private LargeFileMapper largeFileMapper;
 
+    @Autowired
+    private FfmpegUtils ffmpegUtils;
+
     @Override
     public void upload(User user, String currentPath, MultipartFile file) {
         String basePath = initUserRootDir(user.getNickName());
@@ -47,6 +51,7 @@ public class FileServiceImpl implements FileService {
 
         try {
             file.transferTo(toFile);
+            ffmpegUtils.afterUpload(Objects.requireNonNull(file.getOriginalFilename()),currentPath,user.getNickName());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -117,7 +122,7 @@ public class FileServiceImpl implements FileService {
         return code2Path;
     }
 
-    private LargeFile getLargeFileBy3(User user, String currentPath, String fileName){
+    public LargeFile getLargeFileBy3(User user, String currentPath, String fileName){
         QueryWrapper<LargeFile> qw = new QueryWrapper<LargeFile>()
                 .eq("user_id",user.getId())
                 .eq("view_dir",currentPath)
@@ -154,6 +159,11 @@ public class FileServiceImpl implements FileService {
             if(!largeFile.isPublic()) {
                 //移动文件到公共文件目录
                 FileUtils.moveFile(largeFile.getDiskPath(), initPublicFileDir() + md5);
+
+                //移动附属文件到公共目录
+                if(new File(largeFile.getAttachmentDiskPath()).exists()){
+                    FileUtils.moveFile(largeFile.getAttachmentDiskPath(),initAttachmentPublicFileDir() + md5);
+                }
 
                 //旧私有文件记录改成公共文件记录
                 largeFile.setPublic(true);
@@ -205,6 +215,7 @@ public class FileServiceImpl implements FileService {
             newLargeFile.setUserId(user.getId());
 
             this.unionAndInsert(filePath,fileTmpDirPath,chunks,newLargeFile);
+            ffmpegUtils.afterUpload(fileName,currentPath,user.getNickName());
             return true;
         }else{
             return false;
