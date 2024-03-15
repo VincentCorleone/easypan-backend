@@ -2,7 +2,7 @@ drop database if exists easypan;
 create database easypan;
 use easypan;
 
---表格初始化
+
 create table user(
     id bigint AUTO_INCREMENT not null,
     nick_name varchar(20),
@@ -24,7 +24,7 @@ create table code2path(
     primary key (`code`)
 );
 
---一条记录对应一个文件
+
 create table large_file(
     id bigint AUTO_INCREMENT not null,
     user_id bigint,
@@ -36,5 +36,5 @@ create table large_file(
     unique key `user_path` (`user_id`,`view_dir`,`file_name`)
 );
 
---数据初始化
+
 insert into user (nick_name,email,password) values ( 'vincent', 'mr.vincent.ge@outlook.com', '4hm1aYkoGnhG3YNhYdeivQ==' );
