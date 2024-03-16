@@ -172,7 +172,7 @@ public class FileController {
                 finalPath = absoluteFilePath;
             } else if (largeFile != null && largeFile.isPublic()) {
                 //要下载的文件是公有的
-                finalPath = largeFile.getDiskPath();
+                finalPath = largeFile.getAttachmentDiskPath();
             } else {
                 //异常
                 throw new RuntimeException("要下载的文件不存在");
@@ -204,8 +204,38 @@ public class FileController {
             finalPath = largeFile.getDiskPath();
         } else {
             //异常
-            throw new RuntimeException("要下载的文件不存在");
+            throw new RuntimeException("要预览的文件不存在");
         }
+
+        readFile(response, finalPath);
+    }
+
+    @GetMapping("/getCover")
+    public void getCover(HttpSession session, HttpServletResponse response, @RequestParam("currentPath") String currentPath, @RequestParam("fileName") String fileName) {
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
+        String finalPath = null;
+
+        String basePath = initUserAttachmentDir(user.getNickName());
+        String absoluteFilePath = basePath + currentPath + fileName;
+
+        File file = new File(absoluteFilePath);
+
+        LargeFile largeFile = fileService.getLargeFileBy3(user, currentPath, fileName);
+
+
+        if (file.exists()) {
+            //要下载的文件是私有的且小于10m
+            //要下载的文件是私有的且大于10m
+            finalPath = absoluteFilePath;
+        } else if (largeFile != null && largeFile.isPublic()) {
+            //要下载的文件是公有的
+            finalPath = largeFile.getAttachmentDiskPath();
+        } else {
+            //异常
+            throw new RuntimeException("缩略图不存在");
+        }
+
+        finalPath = finalPath + "/cover.png";
 
         readFile(response, finalPath);
     }
@@ -216,7 +246,7 @@ public class FileController {
         try{
             File file = new File(relativeFilePath);
             if(!file.exists()){
-                return;
+                throw new RuntimeException("要访问的文件不存在");
             }
             in = new FileInputStream(file);
             byte[] bytes = new byte[1024];

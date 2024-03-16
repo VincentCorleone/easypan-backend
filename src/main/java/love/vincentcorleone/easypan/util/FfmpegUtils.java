@@ -4,10 +4,15 @@ import love.vincentcorleone.easypan.Constants;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 
 @Component
@@ -72,6 +77,36 @@ public class FfmpegUtils {
         if (Constants.videos.contains(suffix)){
             //切割视频并制作缩略图
             FfmpegUtils.splitVideoAndGenScale(fileName,currentDir,nickname);
+        } else if(Constants.images.contains(suffix)){
+            FfmpegUtils.genScaleForImage(fileName,currentDir,nickname);
         }
+
+    }
+
+    private static void genScaleForImage(String fileName, String currentDir, String nickname) {
+        String attachDir = FileUtils.initUserAttachmentDir(nickname) + currentDir + fileName;
+        File attachDirFile = new File(attachDir);
+        if(!attachDirFile.exists()){
+            attachDirFile.mkdirs();
+        }
+
+        String inFile = FileUtils.initUserRootDir(nickname) + currentDir + fileName;
+
+        try {
+            BufferedImage src = ImageIO.read(new File(inFile));
+            int srcW = src.getWidth();
+            if (srcW > Constants.COVER_WIDTH){
+                final String Cmd_GenScale = "ffmpeg -i %s -vf scale=%d:-1 %s -y";
+                String cmd = String.format(Cmd_GenScale,inFile, Constants.COVER_WIDTH, attachDir + "/cover.png");
+                exec(cmd);
+            }else{
+                Files.copy(Paths.get(inFile),Paths.get(attachDir + "/cover"), StandardCopyOption.REPLACE_EXISTING);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 }

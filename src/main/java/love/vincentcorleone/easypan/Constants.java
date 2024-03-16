@@ -17,4 +17,18 @@ public class Constants {
 
     public static final List<String> videos = Arrays.asList("mp4", "avi", "rmvb", "mkv", "mov");
 
+    public static final List<String> images = Arrays.asList(
+            "jpeg",
+            "jpg",
+            "png",
+            "gif",
+            "bmp",
+            "dds",
+            "psd",
+            "pdt",
+            "webp",
+            "xmp",
+            "svg",
+            "tiff");
+
 }
