@@ -167,6 +167,15 @@ public class FileServiceImpl implements FileService {
         }
 
         if(delete){
+            if(new File(finalPath).isDirectory()){
+                QueryWrapper<LargeFile> qw = new QueryWrapper<LargeFile>().likeRight("view_dir",currentPath).eq("user_id",user.getId());
+                List<LargeFile> largeFiles = largeFileMapper.selectList(qw);
+                for (LargeFile lf: largeFiles) {
+                    FileUtils.delete(new File(lf.getDiskPath()));
+                    FileUtils.delete(new File(lf.getAttachmentDiskPath()));
+                }
+                largeFileMapper.delete(qw);
+            }
             FileUtils.delete(new File(finalPath));
             FileUtils.delete(new File(attachmentFinalPath));
         }
