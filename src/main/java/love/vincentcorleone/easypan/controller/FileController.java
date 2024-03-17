@@ -101,6 +101,13 @@ public class FileController {
         return ResponseResult.success(map);
     }
 
+    @GetMapping("/delete")
+    public ResponseResult<Map<String, String>> delete(HttpSession session, @RequestParam("currentPath") String currentPath, @RequestParam("fileName") String fileName){
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
+        fileService.delete(user, currentPath, fileName);
+        return ResponseResult.success("删除文件成功");
+    }
+
     @GetMapping("/downloadFile")
     public void downloadFile(HttpServletResponse response, @RequestParam("code") String code){
         Code2Path code2Path  = fileService.downloadFile(code);

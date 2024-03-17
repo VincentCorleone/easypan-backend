@@ -130,6 +130,41 @@ public class FileServiceImpl implements FileService {
         return largeFileMapper.selectOne(qw);
     }
 
+    @Override
+    public void delete(User user, String currentPath, String fileName) {
+        String finalPath = null;
+        String attachmentFinalPath = null;
+
+        String basePath = initUserRootDir(user.getNickName());
+        String absoluteFilePath = basePath + currentPath + fileName;
+
+        File file = new File(absoluteFilePath);
+        LargeFile largeFile = this.getLargeFileBy3(user, currentPath, fileName);
+
+
+        if (file.exists()) {
+            //要下载的文件是私有的且小于10m
+            //要下载的文件是私有的且大于10m
+            finalPath = absoluteFilePath;
+            attachmentFinalPath = initUserAttachmentDir(user.getNickName()) + currentPath + fileName;
+
+        } else if (largeFile != null && largeFile.isPublic()) {
+            //要下载的文件是公有的
+            finalPath = largeFile.getDiskPath();
+            attachmentFinalPath = largeFile.getAttachmentDiskPath();
+        } else {
+            //异常
+            throw new RuntimeException("要删除的文件不存在");
+        }
+        //私有小文件 记得删附属文件
+        //私有大文件
+        //公有文件
+        new File(finalPath).delete();
+        new File(attachmentFinalPath).delete();
+    }
+
+
+
     private void checkExistsSameFile(User user,String currentPath, String fileName){
         //检查同目录下同名文件
         String basePath = initUserRootDir(user.getNickName());

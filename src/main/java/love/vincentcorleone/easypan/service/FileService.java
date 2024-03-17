@@ -25,4 +25,6 @@ public interface FileService {
     boolean checkMd5(User user, String md5, String currentPath, String fileName);
 
     LargeFile getLargeFileBy3(User user, String currentPath, String fileName);
+
+    void delete(User user, String currentPath, String fileName);
 }
