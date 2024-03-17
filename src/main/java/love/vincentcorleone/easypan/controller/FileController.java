@@ -161,7 +161,7 @@ public class FileController {
 
         tmp = relativeFilePath.lastIndexOf("/");
         String fileName = relativeFilePath.substring(tmp+1);
-        String currentPath = relativeFilePath.substring(0,tmp);
+        String currentPath = relativeFilePath.substring(0,tmp+1);
 
         String suffix = fileName.substring(fileName.lastIndexOf(".")+1);
         String finalPath = null;
