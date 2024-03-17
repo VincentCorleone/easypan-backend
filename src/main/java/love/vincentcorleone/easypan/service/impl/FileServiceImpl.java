@@ -141,26 +141,35 @@ public class FileServiceImpl implements FileService {
         File file = new File(absoluteFilePath);
         LargeFile largeFile = this.getLargeFileBy3(user, currentPath, fileName);
 
+        boolean delete = true;
 
         if (file.exists()) {
-            //要下载的文件是私有的且小于10m
-            //要下载的文件是私有的且大于10m
+            //私有小文件
+
             finalPath = absoluteFilePath;
             attachmentFinalPath = initUserAttachmentDir(user.getNickName()) + currentPath + fileName;
 
-        } else if (largeFile != null && largeFile.isPublic()) {
-            //要下载的文件是公有的
+            if (largeFile!=null){
+                //私有大文件
+                largeFileMapper.deleteById(largeFile);
+            }
+        }  else if (largeFile != null && largeFile.isPublic()) {
+            //公有文件
             finalPath = largeFile.getDiskPath();
             attachmentFinalPath = largeFile.getAttachmentDiskPath();
+
+            largeFileMapper.deleteById(largeFile);
+            QueryWrapper<LargeFile> qw = new QueryWrapper<LargeFile>().eq("md5",largeFile.getMd5());
+            delete = largeFileMapper.selectList(qw).size() == 0;
         } else {
             //异常
             throw new RuntimeException("要删除的文件不存在");
         }
-        //私有小文件 记得删附属文件
-        //私有大文件
-        //公有文件
-        new File(finalPath).delete();
-        new File(attachmentFinalPath).delete();
+
+        if(delete){
+            FileUtils.delete(new File(finalPath));
+            FileUtils.delete(new File(attachmentFinalPath));
+        }
     }
 
 
