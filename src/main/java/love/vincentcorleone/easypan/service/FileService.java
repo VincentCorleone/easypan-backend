@@ -29,4 +29,8 @@ public interface FileService {
     void delete(User user, String currentPath, String fileName);
 
     void rename(User user, String currentPath, String fileName, String newName);
+
+    List<String> loadDirs(User user, String targetPath);
+
+    void moveTo(User user, String currentPath, String fileName, String targetPath);
 }

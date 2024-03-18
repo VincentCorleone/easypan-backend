@@ -228,6 +228,71 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    @Override
+    public List<String> loadDirs(User user, String targetPath) {
+        String basePath = initUserRootDir(user.getNickName());
+        String dirPath = basePath + targetPath;
+        File dir = new File(dirPath);
+        if(dir.listFiles() == null){
+            return new ArrayList<>();
+        }else {
+            List<String> dirs = Arrays.stream(Objects.requireNonNull(dir.listFiles())).filter(File::isDirectory).map(File::getName).collect(Collectors.toList());
+            return dirs;
+        }
+    }
+
+    @Override
+    public void moveTo(User user, String currentPath, String fileName, String targetPath) {
+        if(targetPath.equals(currentPath)){
+            return;
+        }
+        String basePath = initUserRootDir(user.getNickName());
+        String filePath = basePath + currentPath + fileName;
+        //分情况
+        if(new File(filePath).isDirectory()){
+            //1.是文件夹
+            if (targetPath.startsWith(currentPath+fileName + "/")){
+                throw new RuntimeException("不能将文件夹移动进自己的子目录");
+            }
+            new File(filePath).renameTo(new File(basePath + targetPath + fileName));
+            QueryWrapper<LargeFile> qw = new QueryWrapper<LargeFile>().eq("user_id",user.getId()).likeRight("view_dir",currentPath + fileName + "/");
+            List<LargeFile> largeFiles = largeFileMapper.selectList(qw);
+            for (LargeFile lf: largeFiles) {
+                String view_dir = lf.getViewDir();
+                String new_view_dir = targetPath + fileName + view_dir.substring(currentPath.length()+fileName.length());
+                lf.setViewDir(new_view_dir);
+                largeFileMapper.updateById(lf);
+            }
+        }else{
+            //2.是文件
+            LargeFile largeFile = getLargeFileBy3(user,currentPath,fileName);
+            if(new File(filePath).exists()){
+                //2.1 是私有文件
+                new File(filePath).renameTo(new File(basePath + targetPath + fileName));
+                String attachmentPath = initUserAttachmentDir(user.getNickName()) + currentPath + fileName;
+                File attachmentFile = new File(attachmentPath);
+                if(attachmentFile.exists()){
+                    attachmentFile.renameTo(new File(initUserAttachmentDir(user.getNickName())+ targetPath + fileName));
+                }
+                if(largeFile == null){
+                    //2.1.1 是私有小文件
+
+                } else{
+                    //2.1.2 是私有大文件
+                    largeFile.setViewDir(targetPath);
+                    largeFileMapper.updateById(largeFile);
+                }
+            } else if (largeFile.isPublic()) {
+                //2.2 是公有文件
+                largeFile.setViewDir(targetPath);
+                largeFileMapper.updateById(largeFile);
+            } else{
+                //2.3 异常
+                throw new RuntimeException("找不到要重命名的文件");
+            }
+        }
+    }
+
 
     private void checkExistsSameFile(User user,String currentPath, String fileName){
         //检查同目录下同名文件

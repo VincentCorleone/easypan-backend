@@ -85,6 +85,20 @@ public class FileController {
         return ResponseResult.success(result);
     }
 
+    @GetMapping("/loadDirs")
+    public ResponseResult<List<String>> loadDirs(HttpSession session, @RequestParam("targetPath") String targetPath){
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
+        List<String> result = fileService.loadDirs(user, targetPath);
+        return ResponseResult.success(result);
+    }
+
+    @GetMapping("/moveTo")
+    public ResponseResult<Object> moveTo(HttpSession session,@RequestParam("currentPath") String currentPath, @RequestParam("fileName") String fileName, @RequestParam("targetPath") String targetPath){
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
+        fileService.moveTo(user, currentPath,fileName,targetPath);
+        return ResponseResult.success("移动文件成功");
+    }
+
     /**
      *
      * @param session
