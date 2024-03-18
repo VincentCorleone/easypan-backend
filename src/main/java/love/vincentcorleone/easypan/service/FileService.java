@@ -27,4 +27,6 @@ public interface FileService {
     LargeFile getLargeFileBy3(User user, String currentPath, String fileName);
 
     void delete(User user, String currentPath, String fileName);
+
+    void rename(User user, String currentPath, String fileName, String newName);
 }

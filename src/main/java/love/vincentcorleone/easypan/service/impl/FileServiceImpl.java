@@ -181,6 +181,52 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    @Override
+    public void rename(User user, String currentPath, String fileName, String newName) {
+        String basePath = initUserRootDir(user.getNickName());
+        String filePath = basePath + currentPath + fileName;
+        //分情况
+        if(new File(filePath).isDirectory()){
+            //1.是文件夹
+            new File(filePath).renameTo(new File(basePath + currentPath + newName));
+            QueryWrapper<LargeFile> qw = new QueryWrapper<LargeFile>().eq("user_id",user.getId()).likeRight("view_dir",currentPath + fileName + "/");
+            List<LargeFile> largeFiles = largeFileMapper.selectList(qw);
+            for (LargeFile lf: largeFiles) {
+                String view_dir = lf.getViewDir();
+                String new_view_dir = currentPath + newName + view_dir.substring(currentPath.length()+newName.length());
+                lf.setViewDir(new_view_dir);
+                largeFileMapper.updateById(lf);
+            }
+
+        }else{
+            //2.是文件
+            LargeFile largeFile = getLargeFileBy3(user,currentPath,fileName);
+            if(new File(filePath).exists()){
+                //2.1 是私有文件
+                new File(filePath).renameTo(new File(basePath + currentPath + newName));
+                String attachmentPath = initUserAttachmentDir(user.getNickName()) + currentPath + fileName;
+                File attachmentFile = new File(attachmentPath);
+                if(attachmentFile.exists()){
+                    attachmentFile.renameTo(new File(initUserAttachmentDir(user.getNickName())+ currentPath + newName));
+                }
+                if(largeFile == null){
+                    //2.1.1 是私有小文件
+
+                } else{
+                    //2.1.2 是私有大文件
+                    largeFile.setFileName(newName);
+                    largeFileMapper.updateById(largeFile);
+                }
+            } else if (largeFile.isPublic()) {
+                //2.2 是公有文件
+                largeFile.setFileName(newName);
+                largeFileMapper.updateById(largeFile);
+            } else{
+                //2.3 异常
+                throw new RuntimeException("找不到要重命名的文件");
+            }
+        }
+    }
 
 
     private void checkExistsSameFile(User user,String currentPath, String fileName){

@@ -108,6 +108,16 @@ public class FileController {
         return ResponseResult.success("删除文件成功");
     }
 
+    @GetMapping("/rename")
+    public ResponseResult<Map<String, String>> rename(HttpSession session, @RequestParam("currentPath") String currentPath, @RequestParam("fileName") String fileName, @RequestParam("newName") String newName){
+        if(newName.contains("/")){
+            throw new RuntimeException("新名称不能包含'/'");
+        }
+        User user =  (User)session.getAttribute( Constants.LOGIN_USER_KEY);
+        fileService.rename(user, currentPath, fileName, newName);
+        return ResponseResult.success("重命名文件成功");
+    }
+
     @GetMapping("/downloadFile")
     public void downloadFile(HttpServletResponse response, @RequestParam("code") String code){
         Code2Path code2Path  = fileService.downloadFile(code);
