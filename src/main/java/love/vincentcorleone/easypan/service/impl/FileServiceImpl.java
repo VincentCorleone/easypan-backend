@@ -193,7 +193,7 @@ public class FileServiceImpl implements FileService {
             List<LargeFile> largeFiles = largeFileMapper.selectList(qw);
             for (LargeFile lf: largeFiles) {
                 String view_dir = lf.getViewDir();
-                String new_view_dir = currentPath + newName + view_dir.substring(currentPath.length()+newName.length());
+                String new_view_dir = currentPath + newName + view_dir.substring(currentPath.length()+fileName.length());
                 lf.setViewDir(new_view_dir);
                 largeFileMapper.updateById(lf);
             }
