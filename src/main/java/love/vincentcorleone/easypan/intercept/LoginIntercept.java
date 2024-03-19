@@ -26,7 +26,7 @@ public class LoginIntercept implements HandlerInterceptor {
                              Object handler) throws Exception {
         // 1.得到 HttpSession 对象
         HttpSession session = request.getSession(false);
-        autoLoginWhenDevelop(session);
+//        autoLoginWhenDevelop(session);
         if (session != null && session.getAttribute(Constants.LOGIN_USER_KEY) != null) {
             // 表示已经登录
             return true;
