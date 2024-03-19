@@ -69,6 +69,9 @@ public class UserController {
             throw new RuntimeException("验证码未通过验证");
         }
         validateEmailCode(session, emailCode);
+        if("public".equals(nickname)){
+            throw new RuntimeException("昵称不能为'public'");
+        }
         userService.register(email, nickname, password);
         return ResponseResult.success("注册成功");
     }
