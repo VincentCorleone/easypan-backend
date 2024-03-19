@@ -36,5 +36,20 @@ create table large_file(
     unique key `user_path` (`user_id`,`view_dir`,`file_name`)
 );
 
+create table share(
+    id bigint AUTO_INCREMENT not null,
+    user_id bigint,
+    view_dir varchar(100),
+    file_name varchar(50),
+    share_time datetime,
+    expire_time datetime,
+    is_forever bool,
+    view_times int,
+    link_suffix varchar(20),
+    code varchar(5),
+    primary key (`id`),
+    unique key `user_path` (`user_id`,`view_dir`,`file_name`),
+    unique key `suffix` (`link_suffix`)
+);
 
 insert into user (nick_name,email,password) values ( 'vincent', 'mr.vincent.ge@outlook.com', '4hm1aYkoGnhG3YNhYdeivQ==' );
