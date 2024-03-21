@@ -1,9 +1,12 @@
 package love.vincentcorleone.easypan.entity.po;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 @TableName("code2path")
 public class Code2Path {
+
+    @TableId
     private String code;
 
     private String path;
