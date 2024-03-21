@@ -1,0 +1,21 @@
+spring:
+  mail:
+    username: ${SENDER_USERNAME}
+    password: ${SENDER_PASSWORD}
+    host: smtp.qq.com
+    port: 465
+    protocol: smtps
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/easypan
+    username: root
+    password: gexingchen
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+front:
+  host: http://127.0.0.1:5173

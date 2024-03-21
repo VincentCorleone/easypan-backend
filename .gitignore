@@ -36,5 +36,4 @@ build/
 ### MacOS ###
 .DS_Store
 
-### SpringBoot ###
-application.yaml
+
