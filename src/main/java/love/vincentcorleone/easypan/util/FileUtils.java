@@ -41,15 +41,12 @@ public class FileUtils {
     }
 
     private static String getProjectPath(){
-        DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
-        URL url = resourceLoader.getClassLoader().getResource("");
-        String projectPath = null;
-        try {
-            projectPath = url.toURI().getSchemeSpecificPart();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+        String projectPath = System.getProperty("user.dir");
+        if (projectPath.endsWith("/")){
+            return projectPath;
+        }else {
+            return projectPath + "/";
         }
-        return projectPath;
     }
 
     public static String initUserRootDir(String nickName){
