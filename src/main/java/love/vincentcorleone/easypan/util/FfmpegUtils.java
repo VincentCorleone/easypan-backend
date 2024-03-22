@@ -25,12 +25,20 @@ public class FfmpegUtils {
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
 
-            process.waitFor();
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
             }
-
             reader.close();
+
+            reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+            reader.close();
+
+
+            process.waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
