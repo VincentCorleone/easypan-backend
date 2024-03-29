@@ -26,6 +26,7 @@ public class InterceptConfig implements WebMvcConfigurer {
                 excludePathPatterns("/api/sendEmailCodeForResetPassword").
                 excludePathPatterns("/api/captcha").
                 excludePathPatterns("/api/sendEmailCodeForRegister").
-                excludePathPatterns("/api/file/downloadFile");
+                excludePathPatterns("/api/file/downloadFile").
+                excludePathPatterns("/api/share/info");
     }
 }

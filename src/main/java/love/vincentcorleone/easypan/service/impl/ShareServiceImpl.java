@@ -1,15 +1,19 @@
 package love.vincentcorleone.easypan.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import love.vincentcorleone.easypan.entity.po.Share;
 import love.vincentcorleone.easypan.entity.po.User;
 import love.vincentcorleone.easypan.entity.vo.ShareVo;
+import love.vincentcorleone.easypan.entity.vo.ShareVoForGuest;
 import love.vincentcorleone.easypan.mapper.ShareMapper;
+import love.vincentcorleone.easypan.mapper.UserMapper;
 import love.vincentcorleone.easypan.service.ShareService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
@@ -19,6 +23,9 @@ public class ShareServiceImpl implements ShareService {
 
     @Autowired
     private ShareMapper shareMapper;
+
+    @Autowired
+    private UserMapper userMapper;
     @Override
     public ShareVo create(User user, String currentPath, String fileName, int validType, int howCode, String code) {
         String link = generateRandomString(true);
@@ -62,6 +69,24 @@ public class ShareServiceImpl implements ShareService {
 
     }
 
+    @Override
+    public ShareVoForGuest info(String linkSuffix) {
+        QueryWrapper<Share> qw = new QueryWrapper<Share>().eq("link_suffix",linkSuffix);
+        Share share = shareMapper.selectOne(qw);
+        QueryWrapper<User> qw2 = new QueryWrapper<User>().eq("id",share.getUserId());
+        User user = userMapper.selectOne(qw2);
+        ShareVoForGuest shareVoForGuest = new ShareVoForGuest();
+        shareVoForGuest.setNickName(user.getNickName());
+
+
+        String pattern1 = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat sdf1 = new SimpleDateFormat(pattern1);
+
+        shareVoForGuest.setDatetime(sdf1.format(share.getShareTime()));
+        shareVoForGuest.setFileName(share.getFileName());
+        return shareVoForGuest;
+    }
+
     private Date plusDay(Date from,int dayOffset){
         Calendar c = Calendar.getInstance();
         c.setTime(from);
@@ -78,7 +103,7 @@ public class ShareServiceImpl implements ShareService {
         //20位长度的base64 2的6次方=64  20*6=120bit
         byte[] randomBytes = new byte[15];
         random.nextBytes(randomBytes);
-        String base64String = Base64.getEncoder().encodeToString(randomBytes);
+        String base64String = Base64.getUrlEncoder().encodeToString(randomBytes);
 
 
         if(isLink){
