@@ -13,7 +13,6 @@ public class Share {
 
     private int viewTimes;
     private String linkSuffix;
-    private String code;
 
     public long getId() {
         return id;
@@ -87,11 +86,4 @@ public class Share {
         this.linkSuffix = linkSuffix;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
 }

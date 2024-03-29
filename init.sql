@@ -46,7 +46,6 @@ create table share(
     is_forever bool,
     view_times int,
     link_suffix varchar(20),
-    code varchar(5),
     primary key (`id`),
     unique key `user_path` (`user_id`,`view_dir`,`file_name`),
     unique key `suffix` (`link_suffix`)

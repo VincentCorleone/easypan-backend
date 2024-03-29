@@ -26,9 +26,9 @@ public class ShareController {
 
 
     @GetMapping("/create")
-    public ResponseResult<Object> create(HttpSession session, @RequestParam("currentPath")String currentPath, @RequestParam("fileName")String fileName, @RequestParam("validType")int validType, @RequestParam("howCode")int howCode, @RequestParam(value = "code",required = false)String code){
+    public ResponseResult<Object> create(HttpSession session, @RequestParam("currentPath")String currentPath, @RequestParam("fileName")String fileName, @RequestParam("validType")int validType){
         User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
-        ShareVo shareVo = shareService.create(user,currentPath,fileName,validType,howCode,code);
+        ShareVo shareVo = shareService.create(user,currentPath,fileName,validType);
         return ResponseResult.success(shareVo);
     }
 

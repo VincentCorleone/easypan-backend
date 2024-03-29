@@ -27,7 +27,7 @@ public class ShareServiceImpl implements ShareService {
     @Autowired
     private UserMapper userMapper;
     @Override
-    public ShareVo create(User user, String currentPath, String fileName, int validType, int howCode, String code) {
+    public ShareVo create(User user, String currentPath, String fileName, int validType) {
         String link = generateRandomString(true);
         Share share = new Share();
         share.setLinkSuffix(link);
@@ -53,11 +53,6 @@ public class ShareServiceImpl implements ShareService {
                 break;
         }
 
-        if(howCode == 1){
-            share.setCode(code);
-        }else if(howCode == 2){
-            share.setCode(generateRandomString(false));
-        }
 
         share.setViewTimes(0);
         try {
