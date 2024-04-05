@@ -1,22 +1,26 @@
 package love.vincentcorleone.easypan.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import jakarta.annotation.Resource;
+import love.vincentcorleone.easypan.entity.po.LargeFile;
 import love.vincentcorleone.easypan.entity.po.Share;
 import love.vincentcorleone.easypan.entity.po.User;
 import love.vincentcorleone.easypan.entity.vo.ShareVo;
 import love.vincentcorleone.easypan.entity.vo.ShareVoForGuest;
 import love.vincentcorleone.easypan.mapper.ShareMapper;
 import love.vincentcorleone.easypan.mapper.UserMapper;
+import love.vincentcorleone.easypan.service.FileService;
 import love.vincentcorleone.easypan.service.ShareService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
+
+import static love.vincentcorleone.easypan.util.FileUtils.*;
 
 @Service
 public class ShareServiceImpl implements ShareService {
@@ -80,6 +84,44 @@ public class ShareServiceImpl implements ShareService {
         shareVoForGuest.setDatetime(sdf1.format(share.getShareTime()));
         shareVoForGuest.setFileName(share.getFileName());
         return shareVoForGuest;
+    }
+
+    @Resource
+    private FileService fileService;
+
+    @Override
+    public HashMap<String, String> download(String linkSuffix) {
+        QueryWrapper<Share> qw = new QueryWrapper<Share>().eq("link_suffix",linkSuffix);
+        Share share = shareMapper.selectOne(qw);
+        QueryWrapper<User> qw2 = new QueryWrapper<User>().eq("id",share.getUserId());
+        User user = userMapper.selectOne(qw2);
+
+
+        String fileName = share.getFileName();
+
+
+
+        String basePath = initUserRootDir(user.getNickName());
+        String filePath = basePath + share.getViewDir() + fileName;
+
+        LargeFile largeFile = fileService.getLargeFileBy3(user,share.getViewDir(),fileName);
+        if(new File(filePath).exists()){
+            //1 是私有文件
+            //do nothing
+        } else if (largeFile.isPublic()) {
+            //2 是公有文件
+            filePath = largeFile.getDiskPath();
+        } else {
+            //3 异常
+            throw new RuntimeException("找不到要下载的文件");
+        }
+
+
+
+        HashMap<String,String> result = new HashMap<>();
+        result.put("fileName",fileName);
+        result.put("filePath",filePath);
+        return result;
     }
 
     private Date plusDay(Date from,int dayOffset){
