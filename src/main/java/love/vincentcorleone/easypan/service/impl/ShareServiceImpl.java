@@ -72,6 +72,11 @@ public class ShareServiceImpl implements ShareService {
     public ShareVoForGuest info(String linkSuffix) {
         QueryWrapper<Share> qw = new QueryWrapper<Share>().eq("link_suffix",linkSuffix);
         Share share = shareMapper.selectOne(qw);
+
+        if(share.getExpireTime().before(new Date())){
+            shareMapper.deleteById(share);
+            throw new RuntimeException("该文件分享已过期");
+        }
         QueryWrapper<User> qw2 = new QueryWrapper<User>().eq("id",share.getUserId());
         User user = userMapper.selectOne(qw2);
         ShareVoForGuest shareVoForGuest = new ShareVoForGuest();
@@ -93,6 +98,10 @@ public class ShareServiceImpl implements ShareService {
     public HashMap<String, String> download(String linkSuffix) {
         QueryWrapper<Share> qw = new QueryWrapper<Share>().eq("link_suffix",linkSuffix);
         Share share = shareMapper.selectOne(qw);
+        if(share.getExpireTime().before(new Date())){
+            shareMapper.deleteById(share);
+            throw new RuntimeException("该文件分享已过期");
+        }
         QueryWrapper<User> qw2 = new QueryWrapper<User>().eq("id",share.getUserId());
         User user = userMapper.selectOne(qw2);
 
