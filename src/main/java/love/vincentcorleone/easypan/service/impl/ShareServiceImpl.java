@@ -73,7 +73,7 @@ public class ShareServiceImpl implements ShareService {
         QueryWrapper<Share> qw = new QueryWrapper<Share>().eq("link_suffix",linkSuffix);
         Share share = shareMapper.selectOne(qw);
 
-        if(share.getExpireTime().before(new Date())){
+        if(share.getExpireTime()!=null && share.getExpireTime().before(new Date())){
             shareMapper.deleteById(share);
             throw new RuntimeException("该文件分享已过期");
         }
@@ -98,7 +98,7 @@ public class ShareServiceImpl implements ShareService {
     public HashMap<String, String> download(String linkSuffix) {
         QueryWrapper<Share> qw = new QueryWrapper<Share>().eq("link_suffix",linkSuffix);
         Share share = shareMapper.selectOne(qw);
-        if(share.getExpireTime().before(new Date())){
+        if(share.getExpireTime()!=null && share.getExpireTime().before(new Date())){
             shareMapper.deleteById(share);
             throw new RuntimeException("该文件分享已过期");
         }
@@ -131,6 +131,18 @@ public class ShareServiceImpl implements ShareService {
         result.put("fileName",fileName);
         result.put("filePath",filePath);
         return result;
+    }
+
+    @Override
+    public List<Share> list(User user) {
+        QueryWrapper<Share> qw = new QueryWrapper<Share>().eq("user_id",user.getId());
+        return shareMapper.selectList(qw);
+    }
+
+    @Override
+    public void cancel(User user, String linkSuffix) {
+        QueryWrapper<Share> qw = new QueryWrapper<Share>().eq("user_id",user.getId()).eq("link_suffix", linkSuffix);
+        shareMapper.delete(qw);
     }
 
     private Date plusDay(Date from,int dayOffset){

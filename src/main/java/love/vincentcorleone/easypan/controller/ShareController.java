@@ -5,23 +5,24 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import love.vincentcorleone.easypan.Constants;
+import love.vincentcorleone.easypan.entity.po.Share;
 import love.vincentcorleone.easypan.entity.po.User;
 import love.vincentcorleone.easypan.entity.vo.ShareVo;
 import love.vincentcorleone.easypan.entity.vo.ShareVoForGuest;
+import love.vincentcorleone.easypan.entity.vo.ShareVoForUser;
 import love.vincentcorleone.easypan.exception.ResponseResult;
 import love.vincentcorleone.easypan.service.ShareService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/share")
@@ -45,6 +46,21 @@ public class ShareController {
     public ResponseResult<Object> info(@RequestParam("linkSuffix")String linkSuffix){
         ShareVoForGuest share = shareService.info(linkSuffix);
         return ResponseResult.success(share);
+    }
+
+    @GetMapping("/list")
+    public ResponseResult<Object> list(HttpSession session){
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
+        List<Share> shares = shareService.list(user);
+        List<ShareVoForUser> result = shares.stream().map((ShareVoForUser::new)).collect(Collectors.toList());
+        return ResponseResult.success(result);
+    }
+
+    @DeleteMapping("/cancel")
+    public ResponseResult<Object> cancel(HttpSession session,@RequestParam("linkSuffix")String linkSuffix){
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
+        shareService.cancel(user, linkSuffix);
+        return ResponseResult.success("取消分享成功");
     }
 
     @GetMapping("/download")
