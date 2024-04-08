@@ -69,6 +69,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public void updatePwd(User user, String password) {
+        user.setPassword(this.hashPassword(password));
+        userMapper.updateById(user);
+    }
+
     private String hashPassword(String password){
         Base64.Encoder encoder = Base64.getEncoder();
         return encoder.encodeToString(DigestUtils.md5Digest(password.getBytes()));

@@ -1,6 +1,7 @@
 package love.vincentcorleone.easypan.controller;
 
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -13,6 +14,9 @@ import love.vincentcorleone.easypan.service.EmailService;
 import love.vincentcorleone.easypan.service.UserService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -77,7 +81,7 @@ public class UserController {
     }
 
     @PostMapping("/user/login")
-    public ResponseResult<Object> login(HttpSession session,
+    public ResponseResult<Object> login(HttpSession session, HttpServletResponse response,
                                         @RequestParam("email") @Email(message = "邮箱格式不正确") String email,
                                         @RequestParam("password") @Pattern(regexp = "^[0-9a-z]{8,12}$",message = "密码格式不正确，正确格式为8-12位密码或数字") String password,
                                         @RequestParam("captcha") @Pattern(regexp = "^[0-9a-z]{5}$",message = "图片验证码格式不正确，正确格式为5位密码或数字") String captcha){
@@ -86,6 +90,7 @@ public class UserController {
         }
         User loginUser = userService.login(email, password);
         if (loginUser==null){
+            response.setStatus(HttpStatusEnum.FAILWHENAUTHORIZING.getCode());
             return ResponseResult.fail(HttpStatusEnum.FAILWHENAUTHORIZING);
         }else{
             session.setAttribute(Constants.LOGIN_USER_KEY,loginUser);
@@ -97,6 +102,20 @@ public class UserController {
     public ResponseResult<Object> logout(HttpSession session){
         session.removeAttribute(Constants.LOGIN_USER_KEY);
         return ResponseResult.success("退出成功");
+    }
+
+    @GetMapping("/user/info")
+    public ResponseResult<Object> userInfo(HttpSession session){
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
+        Map<String,String> result = new HashMap<>();
+        result.put("nickname",user.getNickName());
+        return ResponseResult.success(result);
+    }
+    @GetMapping("/user/updatePwd")
+    public ResponseResult<Object> updatePwd(HttpSession session,@RequestParam("password") @Pattern(regexp = "^[0-9a-z]{8,12}$",message = "密码格式不正确，正确格式为8-12位密码或数字") String password){
+        User user =  (User)session.getAttribute(Constants.LOGIN_USER_KEY);
+        userService.updatePwd(user, password);
+        return ResponseResult.success("修改密码成功");
     }
 
     @PostMapping("/user/resetPassword")
